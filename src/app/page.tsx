@@ -1,12 +1,16 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import { HeroSection } from "@/components/HeroSection";
 import { PreviewArea } from "@/components/PreviewArea";
 import { fetchGitHubData } from "@/services/github";
 import { analyzeRepositories } from "@/utils/repoAnalyzer";
 import { generateConfiguredReadme } from "@/utils/readmeGenerator";
+import { TEMPLATES } from "@/lib/templates";
+import { applyPresetToConfig } from "@/lib/presets";
 import {
   GitHubUserProfile,
   GitHubRepo,
@@ -135,7 +139,10 @@ const INITIAL_CONFIG: ReadmeBuilderConfig = {
 
 const STORAGE_KEY = "github_readme_builder_state_v2";
 
-export default function Home() {
+function BuilderContent() {
+  const searchParams = useSearchParams();
+  const templateIdParam = searchParams.get("template");
+
   const [username, setUsername] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState("");
@@ -146,7 +153,7 @@ export default function Home() {
   const [analysis, setAnalysis] = useState<RepoAnalysisResult | null>(null);
   const [config, setConfig] = useState<ReadmeBuilderConfig>(INITIAL_CONFIG);
 
-  // Restore local storage state on initial mount
+  // Restore local storage state or template configuration on initial mount
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -158,10 +165,18 @@ export default function Home() {
         if (parsed.analysis) setAnalysis(parsed.analysis);
         if (parsed.config) setConfig(parsed.config);
       }
+
+      // If template parameter present, apply template configuration
+      if (templateIdParam) {
+        const matchedTemplate = TEMPLATES.find((t) => t.id === templateIdParam);
+        if (matchedTemplate) {
+          setConfig((prev) => applyPresetToConfig(matchedTemplate.id, prev));
+        }
+      }
     } catch (e) {
       console.error("Failed to restore saved session state:", e);
     }
-  }, []);
+  }, [templateIdParam]);
 
   // Save to local storage on state updates
   useEffect(() => {
@@ -274,33 +289,36 @@ export default function Home() {
   };
 
   return (
+    <main className="flex-1 flex flex-col items-center w-full">
+      <HeroSection />
+      <PreviewArea
+        username={username}
+        setUsername={setUsername}
+        isLoading={isLoading}
+        loadingStep={loadingStep}
+        error={error}
+        profile={profile}
+        repos={repos}
+        analysis={analysis}
+        markdown={markdown}
+        config={config}
+        setConfig={setConfig}
+        onFetchGitHub={handleFetch}
+        onRefetchGitHub={handleRefetch}
+        onReset={handleReset}
+      />
+    </main>
+  );
+}
+
+export default function Home() {
+  return (
     <div className="min-h-screen flex flex-col bg-white text-[#1f2328] font-sans selection:bg-[#0969da]/20 selection:text-[#1f2328]">
       <Header />
-      <main className="flex-1 flex flex-col items-center">
-        <HeroSection />
-        <PreviewArea
-          username={username}
-          setUsername={setUsername}
-          isLoading={isLoading}
-          loadingStep={loadingStep}
-          error={error}
-          profile={profile}
-          repos={repos}
-          analysis={analysis}
-          markdown={markdown}
-          config={config}
-          setConfig={setConfig}
-          onFetchGitHub={handleFetch}
-          onRefetchGitHub={handleRefetch}
-          onReset={handleReset}
-        />
-      </main>
-      <footer className="w-full border-t border-[#d0d7de] py-4 text-center text-xs text-[#656d76] bg-[#f6f8fa]">
-        <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2 font-mono">
-          <span>© {new Date().getFullYear()} GitHub Profile README Builder Pro</span>
-          <span className="text-[#656d76]/70">Production Grade Developer Tool</span>
-        </div>
-      </footer>
+      <Suspense fallback={<div className="flex-1 p-8 text-center text-xs">Loading Builder Workspace...</div>}>
+        <BuilderContent />
+      </Suspense>
+      <Footer />
     </div>
   );
 }

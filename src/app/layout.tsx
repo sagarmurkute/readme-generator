@@ -13,8 +13,14 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "README Generator - GitHub Profile README Builder",
-  description: "Create and customize a developer profile README using GitHub metrics, tech stack badges, and live markdown preview.",
+  title: "GitHub README Generator",
+  description: "Create a professional GitHub Profile README from your GitHub profile.",
+  openGraph: {
+    title: "GitHub README Generator",
+    description: "Create a professional GitHub Profile README from your GitHub profile.",
+    type: "website",
+    siteName: "GitHub README Generator",
+  },
 };
 
 export default function RootLayout({
