@@ -80,10 +80,10 @@ export function SectionsListColumn({
   };
 
   return (
-    <div className="border border-[#d0d7de] rounded-xl bg-white p-3 space-y-3 shadow-2xs font-sans">
-      <div className="font-bold text-xs text-[#1f2328] px-1 flex items-center justify-between pb-1 border-b border-[#d0d7de]">
-        <span>Sections</span>
-        <span className="text-[10px] text-[#656d76] font-mono">11 Items</span>
+    <div className="border border-[#D9D7D2] rounded-xl bg-white p-3 space-y-3 shadow-2xs font-sans">
+      <div className="font-bold text-xs text-[#171717] px-1 flex items-center justify-between pb-2 border-b border-[#D9D7D2]">
+        <span>Document Outline</span>
+        <span className="text-[10px] text-[#6B6B6B] font-mono">11 Sections</span>
       </div>
 
       <div className="space-y-1 text-xs">
@@ -97,26 +97,26 @@ export function SectionsListColumn({
               onClick={() => setActiveSectionId(item.id)}
               className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-colors ${
                 isActive
-                  ? "bg-[#f0f6ff] text-[#0969da] font-semibold border border-[#0969da]/30 shadow-2xs"
-                  : "hover:bg-[#f6f8fa] text-[#1f2328]"
+                  ? "bg-[#EFEEE9] text-[#171717] font-semibold border border-[#D9D7D2]"
+                  : "hover:bg-[#EFEEE9] text-[#171717]"
               }`}
             >
               {/* Drag Handle & Icon & Name */}
               <div className="flex items-center gap-2 min-w-0">
-                <span className="text-[#656d76]/40 font-mono text-[10px] cursor-grab select-none">
+                <span className="text-[#6B6B6B] font-mono text-[10px] cursor-grab select-none">
                   ::
                 </span>
                 <span className="text-xs shrink-0">{item.icon}</span>
                 <span className="truncate text-xs">{item.label}</span>
               </div>
 
-              {/* Toggle Switch & Active Arrow */}
+              {/* Toggle Switch */}
               <div className="flex items-center gap-1.5 shrink-0">
                 <button
                   type="button"
                   onClick={(e) => toggleSectionEnabled(item.id, e)}
                   className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${
-                    isEnabled ? "bg-[#0969da]" : "bg-zinc-300"
+                    isEnabled ? "bg-[#171717]" : "bg-zinc-300"
                   }`}
                 >
                   <span
@@ -127,7 +127,7 @@ export function SectionsListColumn({
                 </button>
 
                 {isActive && (
-                  <span className="text-[#0969da] font-bold text-xs ml-0.5">›</span>
+                  <span className="text-[#171717] font-bold text-xs ml-0.5">›</span>
                 )}
               </div>
             </div>
@@ -137,6 +137,7 @@ export function SectionsListColumn({
 
       {/* Add Custom Section Button */}
       <button
+        type="button"
         onClick={() => {
           setActiveSectionId("custom");
           setConfig((prev) => ({
@@ -144,9 +145,9 @@ export function SectionsListColumn({
             custom: { ...prev.custom, enabled: true },
           }));
         }}
-        className="w-full py-2 border border-dashed border-[#d0d7de] hover:border-[#0969da] text-[#656d76] hover:text-[#0969da] rounded-lg text-xs font-medium transition-colors flex items-center justify-center gap-1 bg-white"
+        className="w-full py-2 border border-dashed border-[#D9D7D2] hover:border-[#171717] text-[#6B6B6B] hover:text-[#171717] rounded-lg text-xs font-medium transition-colors flex items-center justify-center gap-1 bg-white"
       >
-        <span>+ Add Custom Section</span>
+        <span>+ Add Section</span>
       </button>
     </div>
   );
