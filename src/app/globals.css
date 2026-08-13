@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Consolas, monospace;
+  --color-accent: #0969da;
+  --color-accent-hover: #0858b9;
+}
+
+:root {
+  --background: #ffffff;
+  --background-subtle: #f6f8fa;
+  --foreground: #1f2328;
+  --foreground-muted: #656d76;
+  --border: #d0d7de;
+}
+
+html {
+  font-size: 94%; /* Slightly larger base font size for optimal readability */
+  zoom: 0.92; /* Perfect balance between spacious and compact (~92% zoom equivalent) */
+  -webkit-text-size-adjust: 94%;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+code, pre, .font-mono {
+  font-family: var(--font-mono);
+}
+
+/* Custom range slider styling */
+input[type="range"] {
+  accent-color: #0969da;
+}
