@@ -1,28 +1,44 @@
 import { ReadmeBuilderConfig } from "@/types/config";
 
 export function generateAboutSection(config: ReadmeBuilderConfig): string[] {
-  const { about, username } = config;
+  const { about } = config;
   if (!about.enabled) return [];
 
   const lines: string[] = [];
-  lines.push("## 🚀 About Me\n");
+  const bullets: string[] = [];
 
-  if (about.content && about.content.trim()) {
-    lines.push(about.content.trim() + "\n");
-  } else {
-    lines.push(`Software developer on GitHub as **@${username || "developer"}**.\n`);
+  if (about.workingOn && about.workingOn.trim()) {
+    bullets.push(`- 🔭 **I’m currently working on**: ${about.workingOn.trim()}`);
+  }
+  if (about.learning && about.learning.trim()) {
+    bullets.push(`- 🌱 **I’m currently learning**: ${about.learning.trim()}`);
+  }
+  if (about.collaborateOn && about.collaborateOn.trim()) {
+    bullets.push(`- 👯 **I’m looking to collaborate on**: ${about.collaborateOn.trim()}`);
+  }
+  if (about.askMeAbout && about.askMeAbout.trim()) {
+    bullets.push(`- 💬 **Ask me about**: ${about.askMeAbout.trim()}`);
+  }
+  if (about.funFact && about.funFact.trim()) {
+    bullets.push(`- ⚡ **Fun fact**: ${about.funFact.trim()}`);
+  }
+  if (about.reachMe && about.reachMe.trim()) {
+    bullets.push(`- 📫 **How to reach me**: ${about.reachMe.trim()}`);
   }
 
-  const bullets: string[] = [];
-  if (about.workingOn) bullets.push(`- 🔭 **I’m currently working on**: ${about.workingOn}`);
-  if (about.learning) bullets.push(`- 🌱 **I’m currently learning**: ${about.learning}`);
-  if (about.collaborateOn) bullets.push(`- 👯 **I’m looking to collaborate on**: ${about.collaborateOn}`);
-  if (about.askMeAbout) bullets.push(`- 💬 **Ask me about**: ${about.askMeAbout}`);
-  if (about.funFact) bullets.push(`- ⚡ **Fun fact**: ${about.funFact}`);
-  if (about.reachMe) bullets.push(`- 📫 **How to reach me**: ${about.reachMe}`);
+  const hasMainContent = about.content && about.content.trim().length > 0;
+  if (!hasMainContent && bullets.length === 0) {
+    return [];
+  }
+
+  lines.push("## 👨‍💻 About Me\n");
+
+  if (hasMainContent) {
+    lines.push(about.content.trim() + "\n");
+  }
 
   if (bullets.length > 0) {
-    lines.push("\n" + bullets.join("\n") + "\n");
+    lines.push(bullets.join("\n") + "\n");
   }
 
   return lines;

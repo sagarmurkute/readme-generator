@@ -1,6 +1,11 @@
 import { GitHubRepo } from "@/types/github";
 import { ReadmeBuilderConfig } from "@/types/config";
 
+function escapeMarkdownText(text: string | null | undefined): string {
+  if (!text) return "";
+  return text.replace(/[\r\n]+/g, " ").trim();
+}
+
 function escapeTableCell(text: string | null | undefined): string {
   if (!text) return "—";
   return text.replace(/\|/g, "\\|").replace(/[\r\n]+/g, " ").trim();
@@ -10,13 +15,12 @@ export function generateProjectsSection(
   config: ReadmeBuilderConfig,
   repos: GitHubRepo[] = []
 ): string[] {
-  const { projects, username } = config;
+  const { projects } = config;
   if (!projects.enabled) return [];
 
   const lines: string[] = [];
 
   let selectedRepos: GitHubRepo[] = [];
-
   if (projects.selectedRepoIds && projects.selectedRepoIds.length > 0) {
     selectedRepos = repos.filter((r) =>
       projects.selectedRepoIds.includes(r.id)
@@ -35,16 +39,7 @@ export function generateProjectsSection(
 
   lines.push("## ⭐ Featured Projects\n");
 
-  if (projects.displayStyle === "grid" && username && selectedRepos.length > 0) {
-    lines.push('<div align="center">\n');
-    for (const repo of selectedRepos) {
-      lines.push(
-        `<a href="${repo.html_url}"><img src="https://github-readme-stats.vercel.app/api/pin/?username=${username}&repo=${repo.name}&theme=${config.stats.theme || "radial"}" alt="${repo.name}" /></a>\n`
-      );
-    }
-    lines.push("</div>\n");
-  } else {
-    // Table format
+  if (projects.displayStyle === "table") {
     lines.push("| Project | Description | Language | Stars | Forks |");
     lines.push("| :--- | :--- | :--- | :---: | :---: |");
 
@@ -68,6 +63,33 @@ export function generateProjectsSection(
       lines.push(`| ${nameLink} | ${desc} | ${lang} | ${stars} | ${forks} |`);
     }
     lines.push("");
+  } else {
+    // Clean entry format
+    for (const project of selectedRepos) {
+      lines.push(`### 🚀 [${escapeMarkdownText(project.name)}](${project.html_url})\n`);
+      if (project.description) {
+        lines.push(`${escapeMarkdownText(project.description)}\n`);
+      }
+      const langText = project.language ? `\`${project.language}\` ` : "";
+      const starsText = `⭐ ${project.stargazers_count || 0}`;
+      const forksText = ` | 🍴 ${project.forks_count || 0}`;
+      lines.push(`${langText}${starsText}${forksText}\n`);
+    }
+
+    for (const custom of customProjects) {
+      if (custom.name) {
+        const title = custom.url ? `### 🚀 [${escapeMarkdownText(custom.name)}](${custom.url})` : `### 🚀 ${escapeMarkdownText(custom.name)}`;
+        lines.push(`${title}\n`);
+        if (custom.description) {
+          lines.push(`${escapeMarkdownText(custom.description)}\n`);
+        }
+        const langText = custom.language ? `\`${custom.language}\` ` : "";
+        const starsText = custom.stars ? `⭐ ${custom.stars}` : "";
+        if (langText || starsText) {
+          lines.push(`${langText}${starsText}\n`);
+        }
+      }
+    }
   }
 
   return lines;

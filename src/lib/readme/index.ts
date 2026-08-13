@@ -10,6 +10,21 @@ import { generateExperienceSection } from "./generators/experience";
 import { generateSponsorsSection } from "./generators/sponsors";
 import { generateExtrasSection } from "./generators/extras";
 
+export function normalizeMarkdown(markdown: string): string {
+  if (!markdown) return "";
+  let result = markdown;
+  // Replace undefined or null string occurrences
+  result = result.replace(/undefined/g, "").replace(/null/g, "");
+  // Replace 3+ consecutive newlines with 2 newlines
+  result = result.replace(/\n{3,}/g, "\n\n");
+  // Trim trailing line whitespace
+  result = result
+    .split("\n")
+    .map((line) => line.trimEnd())
+    .join("\n");
+  return result.trim() + "\n";
+}
+
 export function generateFullReadme(
   config: ReadmeBuilderConfig,
   repos: GitHubRepo[] = []
@@ -21,59 +36,59 @@ export function generateFullReadme(
     switch (sectionId) {
       case "header": {
         const lines = generateHeaderSection(config);
-        allLines.push(...lines);
+        if (lines.length > 0) allLines.push(...lines);
         break;
       }
       case "about": {
         const lines = generateAboutSection(config);
-        allLines.push(...lines);
+        if (lines.length > 0) allLines.push(...lines);
         break;
       }
       case "socials": {
         const lines = generateSocialsSection(config);
-        allLines.push(...lines);
+        if (lines.length > 0) allLines.push(...lines);
         break;
       }
       case "skills": {
         const lines = generateSkillsSection(config);
-        allLines.push(...lines);
+        if (lines.length > 0) allLines.push(...lines);
         break;
       }
       case "stats": {
         const lines = generateStatsSection(config);
-        allLines.push(...lines);
+        if (lines.length > 0) allLines.push(...lines);
         break;
       }
       case "projects": {
         const lines = generateProjectsSection(config, repos);
-        allLines.push(...lines);
+        if (lines.length > 0) allLines.push(...lines);
         break;
       }
       case "experience": {
         const lines = generateExperienceSection(config);
-        allLines.push(...lines);
+        if (lines.length > 0) allLines.push(...lines);
         break;
       }
       case "sponsors": {
         const lines = generateSponsorsSection(config);
-        allLines.push(...lines);
+        if (lines.length > 0) allLines.push(...lines);
         break;
       }
       case "extras": {
         const lines = generateExtrasSection(config);
-        allLines.push(...lines);
+        if (lines.length > 0) allLines.push(...lines);
         break;
       }
       case "contributionGraph":
       case "activity": {
         const lines = generateActivitySection(config);
-        allLines.push(...lines);
+        if (lines.length > 0) allLines.push(...lines);
         break;
       }
       case "custom": {
-        if (custom && custom.enabled && custom.heading) {
+        if (custom && custom.enabled && custom.heading && custom.heading.trim()) {
           allLines.push(`## ${custom.heading.trim()}\n`);
-          if (custom.content) {
+          if (custom.content && custom.content.trim()) {
             allLines.push(custom.content.trim() + "\n");
           }
         }
@@ -82,5 +97,6 @@ export function generateFullReadme(
     }
   }
 
-  return allLines.join("\n");
+  const rawMarkdown = allLines.join("\n");
+  return normalizeMarkdown(rawMarkdown);
 }

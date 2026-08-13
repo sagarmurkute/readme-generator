@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { ReadmeBuilderConfig, SectionId } from "@/types/config";
 import { GitHubRepo, GitHubUserProfile, RepoAnalysisResult } from "@/types/github";
-import { PRESET_TEMPLATES } from "@/utils/presets";
+import { PRESETS, applyPresetToConfig } from "@/lib/presets";
 import { SectionsListColumn } from "./SectionsListColumn";
 import { ActiveEditorColumn } from "./ActiveEditorColumn";
 import { LivePreviewColumn } from "./LivePreviewColumn";
@@ -31,6 +31,7 @@ export function CustomizeWorkspace({
   const [activeSectionId, setActiveSectionId] = useState<SectionId>("header");
   const [activePreset, setActivePreset] = useState<string | null>(null);
   const [isPresetsOpen, setIsPresetsOpen] = useState(false);
+  const [pendingPresetId, setPendingPresetId] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown on outside click
@@ -44,23 +45,25 @@ export function CustomizeWorkspace({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const applyPreset = (presetId: string) => {
-    const preset = PRESET_TEMPLATES.find((p) => p.id === presetId);
-    if (!preset) return;
-
-    setActivePreset(presetId);
+  const handleSelectPreset = (presetId: string) => {
     setIsPresetsOpen(false);
-    setConfig((prev) => ({
-      ...prev,
-      ...preset.config,
-      username: prev.username,
-      header: {
-        ...prev.header,
-        ...(preset.config.header || {}),
-        name: prev.header.name || prev.username,
-        avatarUrl: prev.header.avatarUrl,
-      },
-    }));
+    // Check if configuration has custom content or changes
+    const hasCustomContent =
+      Boolean(config.about.content) ||
+      Boolean(config.custom.content) ||
+      (config.skills.languages && config.skills.languages.length > 3);
+
+    if (hasCustomContent) {
+      setPendingPresetId(presetId);
+    } else {
+      executeApplyPreset(presetId);
+    }
+  };
+
+  const executeApplyPreset = (presetId: string) => {
+    setActivePreset(presetId);
+    setPendingPresetId(null);
+    setConfig((prev) => applyPresetToConfig(presetId, prev));
   };
 
   const handleCopy = async () => {
@@ -89,6 +92,34 @@ export function CustomizeWorkspace({
 
   return (
     <div className="w-full max-w-[1700px] mx-auto text-left font-sans px-2 sm:px-4 space-y-2">
+      {/* Preset Confirmation Dialog */}
+      {pendingPresetId && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+          <div className="bg-white border border-[#d0d7de] rounded-xl p-5 max-w-sm w-full space-y-3 shadow-xl text-xs">
+            <h3 className="font-bold text-sm text-[#1f2328]">Apply Preset?</h3>
+            <p className="text-[#656d76] leading-relaxed">
+              Applying this preset will update your README section layout and defaults while preserving your profile information.
+            </p>
+            <div className="flex justify-end gap-2 pt-2 border-t border-[#d0d7de]">
+              <button
+                type="button"
+                onClick={() => setPendingPresetId(null)}
+                className="px-3 py-1.5 border border-[#d0d7de] rounded bg-white text-[#1f2328] font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => executeApplyPreset(pendingPresetId)}
+                className="px-3.5 py-1.5 bg-[#0969da] text-white rounded font-semibold"
+              >
+                Apply Preset
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Sticky Action Toolbar */}
       <div className="flex items-center justify-between p-2 bg-[#f6f8fa] border border-[#d0d7de] rounded-lg shadow-2xs text-xs">
         <div className="flex items-center gap-2">
@@ -106,20 +137,25 @@ export function CustomizeWorkspace({
             {isPresetsOpen && (
               <div className="absolute left-0 top-full mt-1 w-64 bg-white border border-[#d0d7de] rounded-lg shadow-lg z-50 p-1.5 space-y-1">
                 <div className="text-[10px] font-bold text-[#656d76] px-2 py-1 uppercase tracking-wider">
-                  Select Starter Layout
+                  Select Starter Preset
                 </div>
-                {PRESET_TEMPLATES.map((tmpl) => (
+                {PRESETS.map((tmpl) => (
                   <button
                     key={tmpl.id}
                     type="button"
-                    onClick={() => applyPreset(tmpl.id)}
+                    onClick={() => handleSelectPreset(tmpl.id)}
                     className={`w-full text-left p-2 rounded-md hover:bg-[#f0f6ff] transition-colors flex items-start gap-2 ${
                       activePreset === tmpl.id ? "bg-[#f0f6ff] border border-[#0969da]/30" : ""
                     }`}
                   >
                     <span className="text-sm mt-0.5">{tmpl.icon}</span>
                     <div className="min-w-0 flex-1">
-                      <div className="font-bold text-xs text-[#1f2328]">{tmpl.name}</div>
+                      <div className="font-bold text-xs text-[#1f2328] flex items-center justify-between">
+                        <span>{tmpl.name}</span>
+                        <span className="text-[9px] font-mono text-[#0969da] bg-white border border-[#d0d7de] px-1 rounded">
+                          {tmpl.badge}
+                        </span>
+                      </div>
                       <div className="text-[10px] text-[#656d76] truncate">{tmpl.description}</div>
                     </div>
                   </button>

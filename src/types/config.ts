@@ -81,6 +81,12 @@ export interface SocialsConfig {
   customLinks: CustomLinkItem[];
 }
 
+export interface CustomSkillItem {
+  id?: string;
+  name: string;
+  badgeUrl: string;
+}
+
 export interface SkillsConfig {
   enabled: boolean;
   badgeStyle: BadgeStyle;
@@ -95,7 +101,7 @@ export interface SkillsConfig {
   design: string[];
   tools: string[];
   other: string[];
-  customSkills: { name: string; badgeUrl: string }[];
+  customSkills: CustomSkillItem[];
 }
 
 export interface StatsConfig {
